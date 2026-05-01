@@ -39,15 +39,6 @@ res.status(200).json({"message":`Retrieved note with ID: ${id_param} `})
 
 })
 
-app.use( '/profile', (req, res) => {
-res.status(404).json({"message": "Route not found"})
-})
-
-app.use( '/payments', (req, res) => {
-res.status(404).json({"message": "Route not found"})
-})
-
-
 app.use((req, res, next) => {
 res.status(404).json({"message": "Route not found"})
 })
