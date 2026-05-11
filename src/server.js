@@ -1,59 +1,42 @@
-import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
-import { pinoHttp } from 'pino-http';
-
 dotenv.config();
+import express from 'express';
+import cors from 'cors';
+import { logger } from './middleware/logger.js';
+import {connectMongoDB} from './db/connectMongoDB.js';
+import notesRoutes from './routes/notesRoutes.js';
+import { notFoundHandler } from './middleware/errorHandler.js';
+import { errorHandler } from './middleware/notFoundHandler.js';
+const PORT  = process.env.PORT || 3000;
+const app = express();
 
-const app = express()
+const startServer = async () => {
+  try {
+    await connectMongoDB();
+    
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Server failed to start:', err.message);
+    process.exit(1);
+  }
+};
 
-app.use(
-  pinoHttp({
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-      },
-    },
-  })
-);
+startServer();
 
-app.use(cors());
+app.use(logger); 
 app.use(express.json()); 
-
-
-app.get('/test-error', (req, res) => {
-  throw new Error('Something went wrong');
-});
+app.use(cors());
 
 
 
-app.get('/notes', (req, res) => {
-res.status(200).json({"message": "Retrieved all notes"})
-}
-)
-
-app.get('/notes/:noteId', (req, res) => {
-const id_param = req.params.noteId;
-res.status(200).json({"message":`Retrieved note with ID: ${id_param} `})
-
-})
-
-app.use((req, res, next) => {
-res.status(404).json({"message": "Route not found"})
-})
+app.use('/', notesRoutes);
 
 
-app.use((err, req, res, next)=>{
- console.error('Error:', err.message);
-res.status(500).json({
-    message: 'Internal Server Error',
-    error: err.message,
-  });
-})
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`🔗 http://localhost:${PORT}`);
-});
+
+app.use(notFoundHandler);
+
+app.use(errorHandler);
+
