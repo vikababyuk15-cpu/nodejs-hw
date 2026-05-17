@@ -18,6 +18,10 @@ app.use(cors());
 app.use('', notesRoutes);
 
 
+app.use(notFoundHandler);
+app.use(errorHandler);
+
+
 const startServer = async () => {
   try {
     await connectMongoDB();
@@ -38,6 +42,4 @@ startServer();
 
 
 
-app.use(notFoundHandler);
-app.use(errorHandler);
 
