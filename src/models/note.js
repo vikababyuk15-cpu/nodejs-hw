@@ -11,4 +11,4 @@ enum:['Work', 'Personal', 'Meeting', 'Shopping', 'Ideas', 'Travel', 'Finance', '
 
 
 
-export const Note = model('note', mongooseSchema);
+export const Note = model('Note', mongooseSchema);

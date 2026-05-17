@@ -55,7 +55,7 @@ export const updateNote = async (req, res, next) => {
     const updated = await Note.findOneAndUpdate(
       { _id: noteId },
       req.body,
-      { new: true, runValidators: true } 
+      { returnDocument: 'after', runValidators: true } 
     );
 
     if (!updated) {
