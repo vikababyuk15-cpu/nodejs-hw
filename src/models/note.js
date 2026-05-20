@@ -1,5 +1,5 @@
 import {Schema, model} from 'mongoose';
-import { TAGS } from '../constans/tags';
+import { TAGS } from '../constants/tags';
 
 const mongooseSchema = new Schema ({
 title: {type: String, trim: true, required: true},
