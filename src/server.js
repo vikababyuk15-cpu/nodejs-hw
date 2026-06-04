@@ -2,12 +2,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser'; // 1. Імпортуємо cookie-parser
+import cookieParser from 'cookie-parser';
 import { errors } from 'celebrate';
 import { logger } from './middleware/logger.js';
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
-import authRoutes from './routes/authRoutes.js'; // 2. Імпортуємо роутер аутентифікації
+import authRoutes from './routes/authRoutes.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -16,12 +16,11 @@ const app = express();
 
 app.use(logger); 
 app.use(express.json()); 
-app.use(cookieParser()); // 3. Застосовуємо middleware для зчитування кукі
+app.use(cookieParser());
 app.use(cors());
 
-// 4. Реєструємо маршрути
-app.use('/auth', authRoutes); 
-app.use('/notes', notesRoutes); 
+app.use(authRoutes); 
+app.use(notesRoutes); 
 
 app.use(errors());
 
@@ -42,11 +41,4 @@ const startServer = async () => {
 };
 
 startServer();
-startServer();
-
-
-
-
-
-
 

@@ -1,16 +1,17 @@
 import bcrypt from 'bcrypt';
 import createHttpError from 'http-errors';
-import User from '../models/user.js';
-import Session from '../models/session.js';
+// ВИПРАВЛЕНО: додано фігурні дужки для іменованого експорту
+import { User } from '../models/user.js';
+import { Session } from '../models/session.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
 
-// 1. Додано відсутній registerUser
 export const registerUser = async (req, res) => {
   const { email, password } = req.body;
   
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw createHttpError(409, 'Email in use');
+    // ВИПРАВЛЕНО: Змінено статус на 400 згідно з твоїм ТЗ
+    throw createHttpError(400, 'Email in use');
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -37,7 +38,6 @@ export const loginUser = async (req, res) => {
   res.status(200).json(user);
 };
 
-// 2. Оновлено refreshUserSession з урахуванням очищення при простроченні
 export const refreshUserSession = async (req, res) => {
   const { sessionId, refreshToken } = req.cookies;
   const session = await Session.findOne({ _id: sessionId, refreshToken });
