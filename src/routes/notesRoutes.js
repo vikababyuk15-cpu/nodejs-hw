@@ -1,11 +1,13 @@
 import express from 'express';
 import { celebrate } from 'celebrate';
-
-import { getAllNotes } from '../controllers/notesController.js';
-import { createNote } from '../controllers/notesController.js';
-import { getNoteById } from '../controllers/notesController.js';
-import { deleteNote } from '../controllers/notesController.js';
-import { updateNote } from '../controllers/notesController.js';
+import { authenticate } from '../middleware/authenticate.js';
+import { 
+  getAllNotes, 
+  createNote, 
+  getNoteById, 
+  deleteNote, 
+  updateNote 
+} from '../controllers/notesController.js';
 import { 
   getAllNotesSchema, 
   createNoteSchema, 
@@ -15,14 +17,14 @@ import {
 
 const router = express.Router();
 
-router.get('/notes', celebrate(getAllNotesSchema), getAllNotes);
-router.get('/notes/:noteId', celebrate(noteIdSchema), getNoteById);
-router.post('/notes', celebrate(createNoteSchema), createNote);
-router.delete('/notes/:noteId',celebrate(noteIdSchema), deleteNote);
-router.patch('/notes/:noteId', celebrate(updateNoteSchema), updateNote);
+// Застосовуємо мідлвар для захисту всіх маршрутів нижче
+router.use(authenticate);
 
+// Маршрути викликають контролери напряму
+router.get('/', celebrate(getAllNotesSchema), getAllNotes);
+router.get('/:noteId', celebrate(noteIdSchema), getNoteById);
+router.post('/', celebrate(createNoteSchema), createNote);
+router.delete('/:noteId', celebrate(noteIdSchema), deleteNote);
+router.patch('/:noteId', celebrate(updateNoteSchema), updateNote);
 
 export default router;
-
-
-

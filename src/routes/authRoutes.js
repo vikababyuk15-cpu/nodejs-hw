@@ -10,7 +10,6 @@ import {
   registerUserSchema, 
   loginUserSchema 
 } from '../validations/authValidation.js';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
 const router = Router();
 
@@ -18,26 +17,26 @@ const router = Router();
 router.post(
   '/register',
   celebrate(registerUserSchema),
-  ctrlWrapper(registerUser)
+  registerUser
 );
 
 // Логін
 router.post(
   '/login',
   celebrate(loginUserSchema),
-  ctrlWrapper(loginUser)
+  loginUser
 );
 
 // Оновлення сесії
 router.post(
   '/refresh',
-  ctrlWrapper(refreshUserSession)
+  refreshUserSession
 );
 
 // Логаут
 router.post(
   '/logout',
-  ctrlWrapper(logoutUser)
+  logoutUser
 );
 
 export default router;

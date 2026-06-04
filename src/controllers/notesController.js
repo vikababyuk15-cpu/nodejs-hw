@@ -7,39 +7,26 @@ export const getAllNotes = async (req, res, next) => {
     const currentPage = parseInt(page, 10) || 1;
     const limitAmount = parseInt(perPage, 10) || 10;
     const skipAmount = (currentPage - 1) * limitAmount;
+    
+    // Фільтруємо запити саме за userId користувача
+    const filter = { userId: req.user._id };
 
-    // 1. Створюємо базовий запит Mongoose (Query Object) для пошуку та для підрахунку
-    const notesQuery = Note.find();
-    const countQuery = Note.countDocuments();
-
-    // 2. Будуємо ланцюжок запиту для фільтрації за тегом через методи Mongoose
-    if (tag) {
-      notesQuery.where('tag').equals(tag);
-      countQuery.where('tag').equals(tag);
-    }
-
-    // 3. Будуємо ланцюжок для регістронечутливого пошуку в title або content
+    if (tag) filter.tag = tag;
     if (search) {
-      const searchRegex = new RegExp(search, 'i'); // 'i' означає регістронечутливість
-      
-      // Використовуємо метод .or() як вимагає ментор
-      notesQuery.or([{ title: searchRegex }, { content: searchRegex }]);
-      countQuery.or([{ title: searchRegex }, { content: searchRegex }]);
+      const searchRegex = new RegExp(search, 'i');
+      filter.$or = [{ title: searchRegex }, { content: searchRegex }];
     }
 
-    // Додаємо пагінацію до основного запиту нотаток
-    notesQuery.skip(skipAmount).limit(limitAmount);
-
-    // 4. Виконуємо обидва запити ОДНОЧАСНО за допомогою Promise.all
-    const [notes, totalNotes] = await Promise.all([notesQuery, countQuery]);
-
-    const totalPages = Math.ceil(totalNotes / limitAmount);
+    const [notes, totalNotes] = await Promise.all([
+      Note.find(filter).skip(skipAmount).limit(limitAmount),
+      Note.countDocuments(filter)
+    ]);
 
     res.status(200).json({
       page: currentPage,
       perPage: limitAmount,
       totalNotes,
-      totalPages,
+      totalPages: Math.ceil(totalNotes / limitAmount),
       notes,
     });
   } catch (error) {
@@ -49,7 +36,8 @@ export const getAllNotes = async (req, res, next) => {
 
 export const createNote = async (req, res, next) => {
   try {
-    const note = await Note.create(req.body);
+    // Встановлюємо userId при створенні нотатки
+    const note = await Note.create({ ...req.body, userId: req.user._id });
     res.status(201).json(note);
   } catch (error) {
     next(error);
@@ -59,7 +47,8 @@ export const createNote = async (req, res, next) => {
 export const getNoteById = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const oneResult = await Note.findById(noteId);
+    // Шукаємо нотатку за ID та userId
+    const oneResult = await Note.findOne({ _id: noteId, userId: req.user._id });
     if (!oneResult) {
       return next(createError(404, 'Note not found'));
     }
@@ -72,7 +61,8 @@ export const getNoteById = async (req, res, next) => {
 export const deleteNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    const deleteResult = await Note.findByIdAndDelete(noteId);
+    // Видаляємо лише якщо вона належить користувачу
+    const deleteResult = await Note.findOneAndDelete({ _id: noteId, userId: req.user._id });
     if (!deleteResult) {
       return next(createError(404, 'Note not found'));
     }
@@ -85,10 +75,11 @@ export const deleteNote = async (req, res, next) => {
 export const updateNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
+    // Оновлюємо лише якщо вона належить користувачу
     const updated = await Note.findOneAndUpdate(
-      { _id: noteId },
+      { _id: noteId, userId: req.user._id },
       req.body,
-      { returnDocument: 'after', runValidators: true }
+      { new: true, runValidators: true }
     );
 
     if (!updated) {
