@@ -18,7 +18,6 @@ const mongooseSchema = new Schema(
       default: 'Todo',
       enum: TAGS,
     },
-    // Додаємо поле userId
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -30,6 +29,7 @@ const mongooseSchema = new Schema(
   }
 );
 
-mongooseSchema.index({ tag: '1' });
+// Складений індекс для оптимізації пошуку нотаток користувача за тегом
+mongooseSchema.index({ userId: 1, tag: 1 });
 
 export const Note = model('Note', mongooseSchema);

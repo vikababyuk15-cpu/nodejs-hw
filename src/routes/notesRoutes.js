@@ -1,28 +1,30 @@
 import express from 'express';
 import { celebrate } from 'celebrate';
-
-import { getAllNotes } from '../controllers/notesController.js';
-import { createNote } from '../controllers/notesController.js';
-import { getNoteById } from '../controllers/notesController.js';
-import { deleteNote } from '../controllers/notesController.js';
-import { updateNote } from '../controllers/notesController.js';
+import { authenticate } from '../middleware/authenticate.js'; // Імпортуємо мідлвар
+import { 
+  getAllNotes, 
+  createNote, 
+  getNoteById, 
+  deleteNote, 
+  updateNote 
+} from '../controllers/notesController.js';
 import { 
   getAllNotesSchema, 
   createNoteSchema, 
   noteIdSchema, 
   updateNoteSchema 
 } from '../validations/notesValidation.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 
 const router = express.Router();
 
-router.get('/notes', celebrate(getAllNotesSchema), getAllNotes);
-router.get('/notes/:noteId', celebrate(noteIdSchema), getNoteById);
-router.post('/notes', celebrate(createNoteSchema), createNote);
-router.delete('/notes/:noteId',celebrate(noteIdSchema), deleteNote);
-router.patch('/notes/:noteId', celebrate(updateNoteSchema), updateNote);
+// Застосовуємо мідлвар для всіх маршрутів нижче
+router.use(authenticate);
 
+router.get('/', celebrate(getAllNotesSchema), ctrlWrapper(getAllNotes));
+router.get('/:noteId', celebrate(noteIdSchema), ctrlWrapper(getNoteById));
+router.post('/', celebrate(createNoteSchema), ctrlWrapper(createNote));
+router.delete('/:noteId', celebrate(noteIdSchema), ctrlWrapper(deleteNote));
+router.patch('/:noteId', celebrate(updateNoteSchema), ctrlWrapper(updateNote));
 
 export default router;
-
-
-

@@ -1,8 +1,26 @@
 import bcrypt from 'bcrypt';
 import createHttpError from 'http-errors';
 import User from '../models/user.js';
-import Session from '../models/session.js';
+import { Session } from '../models/session.js';
 import { createSession, setSessionCookies } from '../services/auth.js';
+
+// 1. Додано відсутній registerUser
+export const registerUser = async (req, res) => {
+  const { email, password } = req.body;
+  
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw createHttpError(409, 'Email in use');
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await User.create({ ...req.body, password: hashedPassword });
+
+  const session = await createSession(user._id);
+  setSessionCookies(res, session);
+
+  res.status(201).json(user);
+};
 
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -19,12 +37,21 @@ export const loginUser = async (req, res) => {
   res.status(200).json(user);
 };
 
+// 2. Оновлено refreshUserSession з урахуванням очищення при простроченні
 export const refreshUserSession = async (req, res) => {
   const { sessionId, refreshToken } = req.cookies;
   const session = await Session.findOne({ _id: sessionId, refreshToken });
   
   if (!session) throw createHttpError(401, 'Session not found');
+
+  // Логіка очищення при простроченому токені
   if (new Date() > new Date(session.refreshTokenValidUntil)) {
+    await Session.deleteOne({ _id: sessionId });
+    
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.clearCookie('sessionId');
+    
     throw createHttpError(401, 'Session token expired');
   }
 
