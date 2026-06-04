@@ -39,5 +39,5 @@ userSchema.pre('save', function (next) {
   next();
 });
 
-// Експортуємо як default, щоб import User from ... працював правильно
+// Експортуємо як default, щоб import { User } from ... працював правильно
 export const User = model('User', userSchema);
