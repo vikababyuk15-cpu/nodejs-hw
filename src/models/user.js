@@ -40,4 +40,4 @@ userSchema.pre('save', function (next) {
 });
 
 // Експортуємо як default, щоб import User from ... працював правильно
-export default model('User', userSchema);
+export const User = model('User', userSchema);
