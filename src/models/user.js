@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
+import { Schema, model } from 'mongoose'; // Використовуйте import замість require
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
   username: {
     type: String,
     trim: true,
@@ -39,6 +39,5 @@ userSchema.pre('save', function (next) {
   next();
 });
 
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+// Експортуємо як default, щоб import User from ... працював правильно
+export default model('User', userSchema);
