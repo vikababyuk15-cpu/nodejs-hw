@@ -1,44 +1,49 @@
-import dotenv from 'dotenv';
-dotenv.config();
 import express from 'express';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import 'dotenv/config';
 import { errors } from 'celebrate';
-import { logger } from './middleware/logger.js';
+import cookieParser from 'cookie-parser';
+
 import { connectMongoDB } from './db/connectMongoDB.js';
 import notesRoutes from './routes/notesRoutes.js';
-import authRoutes from './routes/authRoutes.js';
-import { notFoundHandler } from './middleware/notFoundHandler.js';
+import { logger } from './middleware/logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
-
-const PORT = process.env.PORT || 3000;
+import { notFoundHandler } from './middleware/notFoundHandler.js';
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-app.use(logger); 
-app.use(express.json()); 
+// // Middleware
+
+app.use(logger);
+app.use(helmet());
+app.use(express.json());
+app.use(
+  cors({
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    origin: '*',
+  }),
+);
 app.use(cookieParser());
-app.use(cors());
 
-app.use(authRoutes); 
-app.use(notesRoutes); 
+app.use(authRoutes);
+app.use(notesRoutes);
+app.use(userRoutes);
 
+// Middleware 404 (після всіх маршрутів)
+app.use(notFoundHandler);
+
+// обробка помилок від celebrate (валідація)
 app.use(errors());
 
-app.use(notFoundHandler);
+// Middleware для обробки помилок
 app.use(errorHandler);
 
-const startServer = async () => {
-  try {
-    await connectMongoDB();
-    
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error('Server failed to start:', err.message);
-    process.exit(1);
-  }
-};
+await connectMongoDB();
 
-startServer();
-
+// Запуск сервера
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
