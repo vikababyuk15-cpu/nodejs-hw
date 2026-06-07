@@ -1,42 +1,36 @@
 import { Router } from 'express';
 import { celebrate } from 'celebrate';
-import { 
-  registerUser, 
-  loginUser, 
-  refreshUserSession, 
-  logoutUser 
+
+import {
+  loginUser,
+  logoutUser,
+  refreshUserSession,
+  registerUser,
+  requestResetEmail,
+  resetPassword,
 } from '../controllers/authController.js';
-import { 
-  registerUserSchema, 
-  loginUserSchema 
+import {
+  loginUserSchema,
+  registerUserSchema,
+  requestResetEmailSchema,
+  resetPasswordSchema,
 } from '../validations/authValidation.js';
 
 const router = Router();
 
-// Реєстрація
+router.post('/auth/register', celebrate(registerUserSchema), registerUser);
+router.post('/auth/login', celebrate(loginUserSchema), loginUser);
+router.post('/auth/logout', logoutUser);
+router.post('/auth/refresh', refreshUserSession);
 router.post(
-  '/register',
-  celebrate(registerUserSchema),
-  registerUser
+  '/auth/request-reset-email',
+  celebrate(requestResetEmailSchema),
+  requestResetEmail,
 );
-
-// Логін
 router.post(
-  '/login',
-  celebrate(loginUserSchema),
-  loginUser
-);
-
-// Оновлення сесії
-router.post(
-  '/refresh',
-  refreshUserSession
-);
-
-// Логаут
-router.post(
-  '/logout',
-  logoutUser
+  '/auth/reset-password',
+  celebrate(resetPasswordSchema),
+  resetPassword,
 );
 
 export default router;

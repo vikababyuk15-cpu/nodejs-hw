@@ -1,43 +1,41 @@
-import { Schema, model } from 'mongoose'; // Використовуйте import замість require
+import { Schema, model } from 'mongoose';
 
-const userSchema = new Schema({
-  username: {
-    type: String,
-    trim: true,
+const userSchema = new Schema(
+  {
+    username: {
+      type: String,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    avatar: {
+      type: String,
+      required: false,
+      default: 'https://ac.goit.global/fullstack/react/default-avatar.jpg',
+    },
   },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-  },
-  password: {
-    type: String,
-    required: true,
-    minlength: 8,
+  { timestamps: true },
+);
+
+userSchema.pre('save', function () {
+  if (!this.username) {
+    this.username = this.email;
   }
-}, {
-  timestamps: true, 
 });
 
+// Перевизначаємо метод toJSON
 userSchema.methods.toJSON = function () {
-  const user = this;
-  const userObject = user.toObject();
-
-  delete userObject.password;
-  
-  return userObject;
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
 };
 
-userSchema.pre('save', function (next) {
-  const user = this;
-
-  if (!user.username) {
-    user.username = user.email;
-  }
-
-  next();
-});
-
-// Експортуємо як default, щоб import User from ... працював правильно
-export default model('User', userSchema);
+export const User = model('user', userSchema);

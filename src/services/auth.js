@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import { Session } from '../models/session.js';
+import { Session } from '../models/session.js'; // ПРИБРАЛИ ФІГУРНІ ДУЖКИ
 import { FIFTEEN_MINUTES, ONE_DAY } from '../constants/time.js';
 
 const generateToken = () => randomBytes(30).toString('base64');

@@ -75,11 +75,11 @@ export const deleteNote = async (req, res, next) => {
 export const updateNote = async (req, res, next) => {
   try {
     const { noteId } = req.params;
-    // Оновлюємо лише якщо вона належить користувачу
+    // Використовуємо returnDocument: 'after' замість new: true
     const updated = await Note.findOneAndUpdate(
       { _id: noteId, userId: req.user._id },
       req.body,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     if (!updated) {
